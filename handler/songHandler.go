@@ -31,12 +31,12 @@ func AddSongHandler(db *gorm.DB) echo.HandlerFunc {
 
 func GetSongHandler(db *gorm.DB) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var banners []model.Song
-		result := db.Find(&banners)
+		var songs []model.Song
+		result := db.Find(&songs)
 		if result.Error != nil {
-			return c.JSON(http.StatusInternalServerError, "Error fetching banners")
+			return c.JSON(http.StatusInternalServerError, "Error fetching songs")
 		}
 
-		return c.JSON(http.StatusOK, banners)
+		return c.JSON(http.StatusOK, songs)
 	}
 }

@@ -34,11 +34,11 @@ func main() {
 	// Set up routes
 	e.POST("/register", handler.RegisterHandler(db))
 	e.POST("/login", handler.LoginHandler(db))
-	// protectedGroup.GET("/users", handler.GetAllUsersHandler(db))
-	// protectedGroup.GET("/user", handler.GetUserByIDHandler(db))
-	// protectedGroup.DELETE("/user/:id", handler.DeleteUserByIDHandler(db))
-	// protectedGroup.POST("/addBanner", handler.AddBannerHandler(db))
-	// protectedGroup.GET("/banner", handler.GetBannerHandler(db))
+	protectedGroup.GET("/users", handler.GetAllUsersHandler(db))
+	protectedGroup.GET("/user", handler.GetUserByIDHandler(db))
+	protectedGroup.DELETE("/user/:id", handler.DeleteUserByIDHandler(db))
+	protectedGroup.POST("/addsong", handler.AddSongHandler(db))
+	protectedGroup.GET("/song", handler.GetSongHandler(db))
 	// Start the server
 	e.Start(":8080")
 }
