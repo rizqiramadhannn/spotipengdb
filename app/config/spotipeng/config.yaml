@@ -1,0 +1,24 @@
+# define your config here
+server:
+  bind: "0.0.0.0"
+  domain: "localhost"
+  port: 8080
+  debug: true
+database:
+  host: "localhost"
+  port: "3306"
+  user: "root"
+  root_password: "1234"
+  password: "1234"
+  name: "spotipengdb"
+  debug: true
+redis:
+  host: "localhost:6379"
+  password: ""
+google:
+  auth_key: ""
+  audience: ""
+encryption:
+  jwt_secret: "960fd0e8-7dd8-491b-93e7-331478e15c43-6bd931e8-6e7e-47ae-95f5-95ae80a878e7"
+  refresh_token_secret: "1670207c-5867-410c-86f2-a3bb650cdef8-bdce78d4-22fe-4c26-9814-baa40b5328ea"
+
