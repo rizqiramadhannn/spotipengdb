@@ -5,6 +5,7 @@ import (
 
 	"spotipeng/app/domain"
 	"spotipeng/app/global"
+	"spotipeng/app/util"
 )
 
 type songUsecase struct {
@@ -24,6 +25,7 @@ func (u songUsecase) RegisterSong(ctx echo.Context, song domain.Song) (err error
 	err = global.SongRepo.Post(ctx, newSong)
 	if err != nil {
 		// Handle the error (e.g., log it)
+		util.LoggerI(ctx, err.Error())
 		return err
 	}
 

@@ -2,8 +2,9 @@ package http_delivery_users
 
 import (
 	"net/http"
-	"strconv"
+	"strings"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 
@@ -103,16 +104,46 @@ func (h UserHandler) ListUser(c echo.Context) error {
 }
 
 func (h UserHandler) GetUserByID(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	// Extract the access token from the request header or wherever it's stored
+	accessToken := c.Request().Header.Get("Authorization")
+	accessToken = strings.TrimPrefix(accessToken, "Bearer ")
+
+	// Validate and parse the access token
+	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
+		// Provide your JWT signing key here to validate the token
+		return []byte("1234"), nil
+	})
+
 	if err != nil {
 		util.LoggerI(c, err.Error())
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"rc":  domain.RC_01_INVALID_PAYLOAD,
-			"msg": err.Error(),
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"rc":  domain.RC_02_INVALID_AUTHORIZATION,
+			"msg": "Invalid token",
 		})
 	}
 
-	user, err := global.UserUsecase.GetById(c, int64(id))
+	// Check if the token is valid
+	if !token.Valid {
+		util.LoggerI(c, "Invalid token")
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"rc":  domain.RC_02_INVALID_AUTHORIZATION,
+			"msg": "Invalid token",
+		})
+	}
+
+	// Access the user ID from the token claims
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		util.LoggerI(c, "Invalid token claims")
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"rc":  domain.RC_02_INVALID_AUTHORIZATION,
+			"msg": "Invalid token",
+		})
+	}
+
+	userID := int64(claims["id"].(float64))
+
+	user, err := global.UserUsecase.GetById(c, userID)
 	if err != nil {
 		util.LoggerI(c, err.Error())
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
@@ -134,6 +165,6 @@ func HttpUserHandler() {
 	global.Echo.POST(v1+"/users/login", handler.Login)
 	global.Echo.POST(v1+"/register", handler.CreateUser)
 	global.Echo.GET(v1+"/users", handler.ListUser, http_usecase.IsLoggedIn)
-	global.Echo.GET(v1+"/users/:id", handler.GetUserByID, http_usecase.IsLoggedIn)
+	global.Echo.GET(v1+"/users", handler.GetUserByID, http_usecase.IsLoggedIn)
 	// global.Echo.POST(v1+"/users/google_login", handler.GoogleLogin)
 }

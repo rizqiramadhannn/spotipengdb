@@ -3,11 +3,12 @@ package domain
 import "github.com/labstack/echo/v4"
 
 type Song struct {
-	ID     uint `json:"id,omitempty" gorm:"primaryKey"`
-	Title  string
-	Album  string
-	Singer string
-	URL    string
+	ID     uint   `json:"id,omitempty" gorm:"primaryKey"`
+	Title  string `json:"title"`
+	Album  string `json:"album"`
+	Singer string `json:"singer"`
+	URL    string `json:"url"`
+	Lyrics string `json:"lyrics"`
 }
 
 type SongRepository interface {

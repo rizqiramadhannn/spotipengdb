@@ -46,14 +46,14 @@ func (h SongHandler) CreateSong(c echo.Context) error {
 }
 
 func (h SongHandler) ListSong(c echo.Context) error {
-	users, err := global.SongUsecase.Get(c)
+	song, err := global.SongUsecase.Get(c)
 	if err != nil {
 		logrus.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, domain.ErrBadParamInput.Error())
 	} else {
 		return c.JSON(http.StatusOK, map[string]interface{}{
-			"rc":    domain.RC_00_OK,
-			"users": users,
+			"rc":   domain.RC_00_OK,
+			"song": song,
 		})
 	}
 }
