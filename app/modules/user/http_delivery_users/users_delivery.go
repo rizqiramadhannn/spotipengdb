@@ -104,13 +104,10 @@ func (h UserHandler) ListUser(c echo.Context) error {
 }
 
 func (h UserHandler) GetUserByID(c echo.Context) error {
-	// Extract the access token from the request header or wherever it's stored
 	accessToken := c.Request().Header.Get("Authorization")
 	accessToken = strings.TrimPrefix(accessToken, "Bearer ")
 
-	// Validate and parse the access token
 	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
-		// Provide your JWT signing key here to validate the token
 		return []byte("1234"), nil
 	})
 
@@ -158,13 +155,67 @@ func (h UserHandler) GetUserByID(c echo.Context) error {
 	}
 }
 
+func (h UserHandler) DeleteUser(c echo.Context) error {
+	accessToken := c.Request().Header.Get("Authorization")
+	accessToken = strings.TrimPrefix(accessToken, "Bearer ")
+
+	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
+		return []byte("1234"), nil
+	})
+
+	if err != nil {
+		util.LoggerI(c, err.Error())
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"rc":  domain.RC_02_INVALID_AUTHORIZATION,
+			"msg": "Invalid token",
+		})
+	}
+
+	// Check if the token is valid
+	if !token.Valid {
+		util.LoggerI(c, "Invalid token")
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"rc":  domain.RC_02_INVALID_AUTHORIZATION,
+			"msg": "Invalid token",
+		})
+	}
+
+	// Access the user ID from the token claims
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		util.LoggerI(c, "Invalid token claims")
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"rc":  domain.RC_02_INVALID_AUTHORIZATION,
+			"msg": "Invalid token",
+		})
+	}
+
+	userID := uint(claims["id"].(float64))
+	userToDelete := domain.User{ID: userID}
+
+	if err := global.UserUsecase.Delete(c, userToDelete); err != nil {
+		util.LoggerI(c, err.Error())
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"rc":  domain.RC_03_INTERNAL_ERROR,
+			"msg": "Failed to delete user",
+		})
+	}
+
+	// Return a success response when user deletion is successful
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"rc":  domain.RC_00_OK,
+		"msg": "User deleted successfully",
+	})
+}
+
 func HttpUserHandler() {
 	handler := &UserHandler{}
 
 	v1 := "/spotipeng/api/v1"
 	global.Echo.POST(v1+"/users/login", handler.Login)
 	global.Echo.POST(v1+"/register", handler.CreateUser)
-	global.Echo.GET(v1+"/users", handler.ListUser, http_usecase.IsLoggedIn)
+	global.Echo.GET(v1+"/allusers", handler.ListUser, http_usecase.IsLoggedIn)
 	global.Echo.GET(v1+"/users", handler.GetUserByID, http_usecase.IsLoggedIn)
+	global.Echo.DELETE(v1+"/users/delete", handler.DeleteUser, http_usecase.IsLoggedIn)
 	// global.Echo.POST(v1+"/users/google_login", handler.GoogleLogin)
 }

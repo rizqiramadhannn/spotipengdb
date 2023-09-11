@@ -36,7 +36,7 @@ func (g gormUserRepo) Patch(ctx echo.Context, user domain.User) (err error) {
 }
 
 func (g gormUserRepo) Delete(ctx echo.Context, user domain.User) (err error) {
-	err = global.DbConn.Model(domain.User{}).Where("id", user.ID).Update("status", -1).Error
+	err = global.DbConn.Delete(&user).Error
 	return
 }
 
